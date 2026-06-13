@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #040406;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi trabajo de sueños</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="main-container">
+        
+        <header>
+            <h1>Mi trabajo de sueños: <span class="highlight">Data Visualization Architect</span></h1>
+        </header>
+
+        <div class="section-card">
+            <h2>¿En qué consiste este rol?</h2>
+            <p>El trabajo de mis sueños es ser Arquitecto de Visualización de Datos. Es un rol híbrido y altamente estratégico que actúa como puente entre la ingeniería compleja y las decisiones de negocio. Consiste en modelar bases de datos robustas (Arquitectura), analizar métricas clave (Análisis) y transformar esa información masiva en productos visuales e interactivos que sean <span class="highlight-alt">intuitivos, estéticos y fáciles de entender</span> (Diseño UX/UI).</p>
+        </div>
+
+        <div class="section-card">
+            <h2>¿Por qué me gustaría tener este trabajo?</h2>
+            <ul class="reasons-list">
+                <li><strong>El Poder del Data Storytelling:</strong> Me apasiona usar el diseño visual y la psicología del color para traducir millones de filas de datos abstractos en una historia clara que cualquiera pueda comprender.</li>
+                <li><strong>Desafío Técnico e Infraestructura:</strong> No me conformo con hacer "gráficos bonitos"; disfruto diseñar la arquitectura subyacente, conectar APIs y optimizar los flujos de datos para que los tableros carguen en tiempo real de forma eficiente.</li>
+                <li><strong>Impacto Directo en Decisiones:</strong> Al cruzar el análisis con la usabilidad, mis diseños permiten a los directores y equipos tomar decisiones críticas basadas en evidencia y no en suposiciones.</li>
+            </ul>
+        </div>
+
+        <div class="section-card">
+            <h2>Ruta de Requisitos por Disciplina</h2>
+            <table class="info-table">
+                <thead>
+                    <tr>
+                        <th>Pilar del Rol</th>
+                        <th>Habilidades y Herramientas Clave</th>
+                        <th>Mi Estado Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1. Análisis de Datos</strong></td>
+                        <td>Estadística, SQL avanzado, Python (Pandas) y descubrimiento de insights.</td>
+                        <td>Avanzado</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. Arquitectura de Sistemas</strong></td>
+                        <td>Modelado de datos (Data Warehouses), pipelines ETL y optimización en la nube.</td>
+                        <td>En proceso</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3. Diseño Visual (UX/UI)</strong></td>
+                        <td>Principios de Gestalt, diseño de interfaces, D3.js, Tableau/PowerBI avanzado y wireframing.</td>
+                        <td>Por iniciar</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+      <div class="section-card carrusel-section">
+    <h2>Inspiración: Arte + Tecnología</h2>
+    <div class="carousel-window">
+        <div class="carousel-track" id="carousel-track">
+            </div>
+        
+        <button class="carousel-btn prev-btn" id="prev-btn">&#10094;</button>
+        <button class="carousel-btn next-btn" id="next-btn">&#10095;</button>
+    </div>
+</div>
+    </div>
+
+</body>
+
+
+    <script type="module">
+  import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+
+document.documentElement.style.backgroundColor = "transparent";
+document.body.style.backgroundColor = "transparent";
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 35;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); 
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+renderer.domElement.classList.add('canvas-bg');
+document.body.appendChild(renderer.domElement);
+
+// --- Iluminación ---
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.02); 
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(0xffffff, 4.0, 60); 
+pointLight.castShadow = true;
+pointLight.shadow.mapSize.width = 2048;  
+pointLight.shadow.mapSize.height = 2048; 
+pointLight.shadow.bias = -0.002;
+scene.add(pointLight);
+
+const mouse = new THREE.Vector2();
+const targetMousePos = new THREE.Vector3(0, 0, 0);
+const raycaster = new THREE.Raycaster();
+const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+
+const floorMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x070709, 
+    roughness: 0.6, 
+    metalness: 0.1 
+});
+const floorGeo = new THREE.PlaneGeometry(500, 500); 
+const floorMesh = new THREE.Mesh(floorGeo, floorMaterial);
+floorMesh.position.z = -1.5; 
+floorMesh.receiveShadow = true;
+scene.add(floorMesh);
+
+
+const singleArrowGeo = new THREE.ConeGeometry(0.16, 0.9, 4);
+singleArrowGeo.rotateX(Math.PI / 2);
+
+const arrowMaterial = new THREE.MeshStandardMaterial({ 
+    color: 0x552a2c,
+    roughness: 0.4,
+    metalness: 0.5
+});
+
+let instancedMesh;
+let arrowData = [];
+const dummy = new THREE.Object3D();
+
+function initRadialGrid() {
+    if (instancedMesh) {
+        scene.remove(instancedMesh);
+        instancedMesh.geometry.dispose();
+        instancedMesh.material.dispose();
+    }
+
+    arrowData = [];
+    const vFOV = THREE.MathUtils.degToRad(camera.fov);
+    const visibleHeight = 2 * Math.tan(vFOV / 2) * camera.position.z;
+    const visibleWidth = visibleHeight * camera.aspect;
+    
+    const maxRadius = Math.sqrt(Math.pow(visibleWidth / 2, 2) + Math.pow(visibleHeight / 2, 2)) * 1.2;
+
+    const ringSpacing = 1.6;
+    const totalRings = Math.ceil(maxRadius / ringSpacing) + 1;
+    
+    let totalCount = 1;
+    for (let r = 1; r <= totalRings; r++) {
+        totalCount += Math.floor(r * 6.5); 
+    }
+
+    instancedMesh = new THREE.InstancedMesh(singleArrowGeo, arrowMaterial, totalCount);
+    instancedMesh.castShadow = true;
+    scene.add(instancedMesh);
+
+    let index = 0;
+    dummy.position.set(0, 0, 0); 
+    dummy.updateMatrix();
+    instancedMesh.setMatrixAt(index, dummy.matrix);
+    arrowData.push({ x: 0, y: 0, z: 0 });
+    index++;
+
+    for (let r = 1; r <= totalRings; r++) {
+        const currentRadius = r * ringSpacing;
+        const arrowsInThisRing = Math.floor(r * 6.5);
+
+        for (let i = 0; i < arrowsInThisRing; i++) {
+            if (index >= totalCount) break;
+            const angle = (i / arrowsInThisRing) * Math.PI * 2;
+            const x = Math.cos(angle) * currentRadius;
+            const y = Math.sin(angle) * currentRadius;
+            const z = 0;
+
+            dummy.position.set(x, y, z);
+            dummy.updateMatrix();
+            instancedMesh.setMatrixAt(index, dummy.matrix);
+            arrowData.push({ x, y, z });
+            index++;
+        }
+    }
+    instancedMesh.instanceMatrix.needsUpdate = true;
+}
+
+initRadialGrid();
+
+
+window.addEventListener('mousemove', (event) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+});
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    initRadialGrid();
+});
+
+
+function animate() {
+    requestAnimationFrame(animate);
+    
+    raycaster.setFromCamera(mouse, camera);
+    raycaster.ray.intersectPlane(planeZ, targetMousePos);
+    
+    const lightTarget = targetMousePos.clone();
+    lightTarget.z = 2.5; 
+    pointLight.position.lerp(lightTarget, 0.08);
+
+    if (instancedMesh) {
+        const total = arrowData.length;
+        for (let i = 0; i < total; i++) {
+            const data = arrowData[i];
+            dummy.position.set(data.x, data.y, data.z);
+            dummy.lookAt(targetMousePos);
+            dummy.updateMatrix();
+            instancedMesh.setMatrixAt(i, dummy.matrix);
+        }
+        instancedMesh.instanceMatrix.needsUpdate = true;
+    }
+    renderer.render(scene, camera);
+}
+animate();
+
+const keywords = [
+    'cyberpunk-art', 'generative-art', 'data-visualization', 
+    'abstract-technology', 'digital-installation', 'creative-coding'
+];
+
+const totalSlides = 5;
+const track = document.getElementById('carousel-track');
+let currentIndex = 0;
+
+// 1. Cargar imágenes de internet de forma dinámica
+function loadCarouselImages() {
+    for (let i = 0; i < totalSlides; i++) {
+        const slide = document.createElement('div');
+        slide.classList.add('carousel-slide');
+
+        
+        const img = document.createElement('img');
+        img.src = `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80&sig=${i}`;
+        
+
+        img.src = `https://source.unsplash.com/featured/800x450/?digital-art,technology&sig=${Math.floor(Math.random() * 1000)}`;
+        
+  
+        const fallbackImages = [
+            'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&w=800&h=450&q=80', 
+            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&h=450&q=80', 
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&h=450&q=80', 
+            'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=800&h=450&q=80',
+            'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&h=450&q=80'  
+        ];
+        
+        img.src = fallbackImages[i];
+
+        const caption = document.createElement('div');
+        caption.classList.add('slide-caption');
+        caption.innerHTML = `Intersección entre flujos matemáticos y estética digital.`;
+
+        slide.appendChild(img);
+        slide.appendChild(caption);
+        track.appendChild(slide);
+    }
+}
+
+
+function updateSlidePosition() {
+    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+}
+
+function nextSlide() {
+    currentIndex = (currentIndex + 1) % totalSlides;
+    updateSlidePosition();
+}
+
+function prevSlide() {
+    currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+    updateSlidePosition();
+}
+
+// 3. Inicializar Eventos
+document.getElementById('next-btn').addEventListener('click', () => {
+    nextSlide();
+    resetAutoPlay();
+});
+
+document.getElementById('prev-btn').addEventListener('click', () => {
+    prevSlide();
+    resetAutoPlay();
+});
+
+
+let autoPlayInterval = setInterval(nextSlide, 5000);
+
+function resetAutoPlay() {
+    clearInterval(autoPlayInterval);
+    autoPlayInterval = setInterval(nextSlide, 5000);
+}
+
+
+loadCarouselImages();
+    </script>
+</body>
+</html>
